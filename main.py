@@ -152,7 +152,7 @@ def submit(driver):
     time.sleep(TIMESLP)
 
 
-def fill_out(driver, campus, reason, destination, track):
+def fill_out(driver, campus, reasonOut, destination, track):
     print('开始填报出校备案')
 
     print('选择出校/入校    ', end='')
@@ -164,7 +164,7 @@ def fill_out(driver, campus, reason, destination, track):
     print('Done')
 
     print('填写出入校事由    ', end='')
-    write_reason(driver, reason)
+    write_reason(driver, reasonOut)
     print('Done')
 
     print('选择出校目的地    ', end='')
@@ -181,7 +181,7 @@ def fill_out(driver, campus, reason, destination, track):
     print('出校备案填报完毕！')
 
 
-def fill_in(driver, campus, reason, habitation, district, street):
+def fill_in(driver, campus, reasonIn, habitation, district, street):
     print('开始填报入校备案')
 
     print('选择出校/入校    ', end='')
@@ -189,7 +189,7 @@ def fill_in(driver, campus, reason, habitation, district, street):
     print('Done')
 
     print('填写出入校事由    ', end='')
-    write_reason(driver, reason)
+    write_reason(driver, reasonIn)
     print('Done')
 
     if habitation != '北京':
@@ -209,50 +209,35 @@ def fill_in(driver, campus, reason, habitation, district, street):
 
     print('入校备案填报完毕！')
 
-def wechat_notification(username, sckey):
-    with request.urlopen(
-            quote('https://sc.ftqq.com/' + sckey + '.send?text=成功报备&desp=学号' +
-                  str(username) + '成功报备',
-                  safe='/:?=&')) as response:
-        response = json.loads(response.read().decode('utf-8'))
-    if response['errmsg'] == 'success':
-        print('微信通知成功！')
-    else:
-        print(str(response['errno']) + ' error: ' + response['errmsg'])
     
-def run(driver, username, password, campus, reason, destination, track,
-        habitation, district, street, wechat):
+def run(driver, username, password, campus, reasonOut, destination, track,
+        habitation, district, street, reasonIn):
     login(driver, username, password)
     print('=================================')
 
     go_to_application_out(driver)
-    fill_out(driver, campus, reason, destination, track)
+    fill_out(driver, campus, reasonOut, destination, track)
     print('=================================')
 
     go_to_application_in(driver)
-    fill_in(driver, campus, reason, habitation, district, street)
-    
-    if wechat != '0':
-        wechat_notification(username, wechat)
-        print('====微信=============================')
-    
+    fill_in(driver, campus, reasonIn, habitation, district, street)
+   
     print('=================================')
     print('可以愉快的玩耍啦！')
-
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--username', '-u', type=str, help='用户名')
     parser.add_argument('--password', '-p', type=str, help='密码')
-    parser.add_argument('--campus', type=str, help='所在校区, 燕园、万柳、畅春园、圆明园、中关新园', default='燕园')
-    parser.add_argument('--reason', type=str, help='出校原因, eg. 吃饭', default='吃饭')
-    parser.add_argument('--destination', type=str, help='出校目的地, eg. 北京', default='北京')
-    parser.add_argument('--track', type=str, help='出校轨迹, eg. 畅春园食堂', default='畅春园')
-    parser.add_argument('--habitation', type=str, help='入校前居住地, eg. 北京', default='北京')
-    parser.add_argument('--district', type=str, help='入校前居住所在区, eg. 海淀区', default='海淀区')
-    parser.add_argument('--street', type=str, help='入校前居住所在街道, eg. 燕园街道', default='燕园街道')
-    parser.add_argument('--wechat', type=str, help='server 酱', default='0')
+    parser.add_argument('--campus', type=str, help='所在校区', default='燕园')
+    parser.add_argument('--reasonOut', type=str, help='出校原因', default='回家')
+    parser.add_argument('--destination', type=str, help='出校目的地', default='北京')
+    parser.add_argument('--track', type=str, help='出校轨迹', default='燕园大厦-西南门-芙蓉里小区')
+    parser.add_argument('--habitation', type=str, help='入校前居住地', default='北京')
+    parser.add_argument('--district', type=str, help='入校前居住所在区', default='海淀区')
+    parser.add_argument('--street', type=str, help='入校前居住所在街道', default='海淀街道')
+    parser.add_argument('--reasonIn', type=str, help='入校原因', default='进实验室')
     args = parser.parse_args()
 
     args_public = copy.deepcopy(args)
@@ -272,8 +257,8 @@ if __name__ == '__main__':
 
     driver = PhantomJS(executable_path=phantomjs_path)
 
-    run(driver, args.username, args.password, args.campus, args.reason,
+    run(driver, args.username, args.password, args.campus, args.reasonOut,
         args.destination, args.track, args.habitation, args.district,
-        args.street, args.wechat)
+        args.street, args.reasonIn)
 
     driver.close()
